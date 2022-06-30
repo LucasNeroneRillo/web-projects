@@ -1,0 +1,44 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+
+    <div class="container-fluid mt-4">
+        <div class="d-inline-block px-2 py-1">
+            <h1 id="username" data-user_id="{{profile_user.id}}">{{profile_user.username}}</h1>
+        </div>
+        <div class="d-inline-block border px-2 py-1 mx-2">
+            Following: {{following_count}}
+        </div>
+        <div class="d-inline-block border px-2 py-1">
+            Followers: <span id="followers_count">{{followers_count}}</span>
+        </div>
+        {% if user.is_authenticated and not user == profile_user %}
+            <button id="follow" class="btn btn-primary mx-2">{{follow_btn_html}}</button>
+        {% endif %}
+    </div>
+
+    <div class="container-fluid">
+        {% include "network/posts.html" %}
+    </div>
+
+    {% if user.is_authenticated and not user == profile_user %}
+        <script>
+            let profile_user_id = document.getElementById('username').dataset.user_id;
+            let follow_btn = document.getElementById('follow');
+
+            follow_btn.onclick = () => {
+                fetch(`/follow/${profile_user_id}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.following) {
+                        follow_btn.innerHTML = "Unfollow";
+                    } else {
+                        follow_btn.innerHTML = "Follow";
+                    }
+                    document.getElementById('followers_count').innerHTML = data.followers_count;
+                });
+            }
+        </script>
+    {% endif %}
+    
+{% endblock %}

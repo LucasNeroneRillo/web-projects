@@ -1,0 +1,21 @@
+{% extends "network/layout.html" %}
+
+{% block body %}
+    <div class="container-fluid">
+
+        <h1 class="mt-2">All posts</h1>
+        
+        {% if user.is_authenticated %}
+        <div class="container-fluid border rounded my-3 px-4 py-3">
+            <h3>New Post</h3>
+            <form action="{% url 'create' %}" method="post">
+                {% csrf_token %}
+                <textarea name="content" class="form-control mb-1 mt-2" placeholder="Type your text here" maxlength="512" required></textarea>
+                <input type="submit" class="btn btn-primary" value="Post"/>
+            </form>
+        </div>
+        {% endif %}
+        
+        {% include "network/posts.html" %}
+    </div>
+{% endblock %}

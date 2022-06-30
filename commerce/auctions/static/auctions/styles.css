@@ -1,0 +1,39 @@
+body {
+    padding: 10px;
+}
+
+li {
+    list-style-type: none;
+    margin-top: 15px;
+}
+
+.listings img {   
+    margin-left: auto;
+    margin-right: auto;
+    display: block;  
+}
+
+.listing img {
+    max-width:100%;
+    height:100%;
+}
+
+.listings, .listings:hover {
+    color: black;
+    text-decoration: none;
+}
+
+.border-medium {
+    border-width: 2px !important;
+}
+.border-big {
+    border-width: 4px !important;
+}
+
+.comment:not(:last-of-type) {
+    border-width: 2px !important;
+}
+
+textarea {
+    width: 100%;
+}

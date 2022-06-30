@@ -1,0 +1,27 @@
+textarea {
+    min-height: 400px;
+}
+
+@keyframes disappear {
+    0% {
+        opacity: 100%;
+    }
+    100% {
+        opacity: 0%;
+    }
+}
+
+@keyframes appear {
+    0% {
+        opacity: 0%;
+    }
+    100% {
+        opacity: 100%;
+    }
+}
+
+#error-message {
+    animation-name: appear;
+    animation-duration: 0.3s;
+    animation-fill-mode: forwards;
+}

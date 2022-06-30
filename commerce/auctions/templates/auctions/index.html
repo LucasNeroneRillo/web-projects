@@ -1,0 +1,43 @@
+{% extends "auctions/layout.html" %}    
+
+{% block body %}
+
+    {% if page == "active" %}
+        <h2>Active Listings</h2>
+    {% elif page == "watchlist" %}
+        <h2>Watchlist</h2>
+    {% elif page == "categories" %}
+        <h2>{{category}}</h2>
+    {% endif %}
+    {% for listing in listings %}
+    <a class="listings" href="{% url 'listings' primary_key=listing.pk %}">
+        <div class="container-fluid border mt-3">
+            <div class="row">
+                <div class="col-sm-4 col-md-3">
+                    {% if listing.image_url %}
+                        <img src="{{listing.image_url}}" alt="Image" class="img-fluid boorder">
+                    {% else %}
+                        {% load static %} <img src="{% static 'auctions/images/no_image_available.png' %}" alt="No image available" class="img-fluid border">
+                    {% endif %}
+                </div>
+                <div class="col border-left my-3">
+                    <ul>
+                        {% if listing in user.watchlisted.all %}
+                            <span class="badge badge-secondary float-right p-2 mx-1">Watching</span>
+                        {% elif user == listing.creator %}
+                            <span class="badge badge-success float-right p-2 mx-1">Your listing</span>
+                        {% endif %}
+                        {% if listing.closed %}
+                            <span class="badge badge-danger float-right p-2 mx-1">Closed</span>
+                        {% endif %}
+                        <li class="h3">{{listing.title}}</li>
+                        {% load humanize %} <li><span style="font-weight: bolder;">Price: </span> ${{listing.current_bid|floatformat:2|intcomma}}</li>
+                        <li>{{listing.description}}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </a>    
+    <b></b>
+    {% endfor %}
+{% endblock %}

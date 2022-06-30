@@ -1,0 +1,13 @@
+textarea {
+    min-height: 80px;
+}
+
+.like-image {
+    max-width: 100%;
+}
+
+.image-container {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}

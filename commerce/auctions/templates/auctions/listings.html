@@ -1,0 +1,102 @@
+{% extends "auctions/layout.html" %}
+{% load mathfilters %}
+
+{% block body %}
+    <div class="mx-4">
+        {% if user.is_authenticated and user == bidder and listing.closed %}
+            <div class="alert alert-success" role="alert">You won!</div>
+        {% endif %}
+        <h2>Listing: {{ listing.title }}</h2>
+        <div>
+            {% if listing.closed %}
+                <p class="h3 d-inline-block mr-2"><span class="badge badge-danger p-2">Closed</span></p>
+            {% endif %}
+            {% if user.is_authenticated and user == listing.creator %}
+                <p class="h3 d-inline-block"><span class="badge badge-success p-2">Your listing</span></p>
+            {% elif user.is_authenticated and not user == listing.creator %}
+                <form class="h3 d-inline-block" action="{% url 'watchlist' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="listing_id" value="{{ listing.pk }}">
+                    {% if listing in user.watchlisted.all %}
+                        <input type="submit" value="Remove from watchlist" class="btn btn-secondary">
+                    {% else %}
+                        <input type="submit" value="Add to watchlist" class="btn btn-secondary">
+                    {% endif %}
+                </form>
+            {% endif %}
+        </div>    
+        <div class="container-fluid listing my-4" style="height: 40vh;">
+            {% if listing.image_url %}
+                <img src="{{listing.image_url}}" alt="Image" class="img-fluid border">
+            {% else %}
+                {% load static %} <img src="{% static 'auctions/images/no_image_available.png' %}" alt="No image available" class="img-fluid border">
+            {% endif %} 
+        </div>
+        <div>
+            <p class="lead">{{ listing.description }}</p>
+            {% load humanize %} <p class="h3">${{ listing.current_bid|floatformat:2|intcomma }}</p>
+        </div>
+        {% if user.is_authenticated and not user == listing.creator %}
+            {% if not listing.closed %}
+                <div>
+                    <p>{{bids_count}} bid(s) so far. You are {% if not bidder == user %}not{% endif %} the current bidder.</p>
+                    <form action="{% url 'bid' %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="listing_id" value="{{ listing.pk }}">
+                        <div class="form-group">
+                            {% if not listing.bids_made %}
+                                <input autofocus class="form-control" type="number" name="bid" placeholder="Bid" min="{{ listing.current_bid }}" step="0.01">
+                            {% else %}
+                                <input autofocus class="form-control" type="number" name="bid" placeholder="Bid" min="{{ listing.current_bid| addition:0.01 }}" step="0.01">
+                            {% endif %}
+                        </div>
+                        <input class="btn btn-primary" type="submit" value="Place bid">
+                    </form>
+                </div>
+            {% endif %}
+        {% elif user.is_authenticated and user == listing.creator and not listing.closed %}
+            <div>
+                <p>{{bids_count}} bid(s) so far.</p>
+                <form action="{% url 'close' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="listing_id" value="{{ listing.pk }}">
+                    <input class="btn btn-primary" type="submit" value="End auction">
+                </form>
+            </div>
+        {% endif %}
+    </div>
+    <div class="container-fluid border border-medium mt-3">
+        <div class="row border-bottom border-big mx-3">
+            <p class="lead font-weight-bold m-1">Comments</p>
+        </div>
+        {% if user.is_authenticated %}
+            <div class="row border-bottom border-big mx-3">
+                <form  style="width: 100%" id="commentformid" action="{% url 'comment' %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="listing_id" value="{{ listing.pk }}">
+                    <div class="container-fluid px-0 pt-3">
+                        <textarea form="commentformid" name="text" wrap="soft" placeholder="Write a comment:" maxlength="1024"></textarea>
+                    </div>
+                    <input class="btn btn-primary mb-3 mt-1" type="submit" value="Add comment">
+                </form>
+            </div>
+        {% endif %}
+        {% for comment in comments %}
+            <div class="row border-bottom comment m-0 p-0">
+                <div class="col-3 col-sm-2 col-lg-1">
+                    <div class="container pb-2 mx-0 my-2">
+                        {% load static %} <img src="{% static 'auctions/images/default-user-image.png' %}" alt="User icon" class="img-fluid border rounded-circle">
+                    </div>
+                </div>
+                <div class="col">
+                    <p class="font-weight-bold mt-1 mb-0 mx-0">{{comment.creator}}</p>
+                    <p class=" mt-0 mb-1 mx-0">{{comment.text}}</p>
+                </div>
+            </div>
+        {% empty %}
+            <div class="row comment my-1 mx-3 p-1">
+                <p class="m-1">No comments</p>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

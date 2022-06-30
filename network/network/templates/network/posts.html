@@ -1,0 +1,171 @@
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+
+        {% if page.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="{% if profile_user %}{% url route_name profile_user %}{% else %}{% url route_name %}{% endif %}?page={{page_number|add:-1}}">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true"><span aria-hidden="true">&laquo;</span></a></li>
+        {% endif %}
+
+        {% for i in paginator.page_range %}
+            {% if i == page_number %}
+                <li class="page-item active">
+                    <a class="page-link" href="{% if profile_user %}{% url route_name profile_user %}{% else %}{% url route_name %}{% endif %}?page={{i}}">{{i}} 
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item">
+                    <a class="page-link" href="{% if profile_user %}{% url route_name profile_user %}{% else %}{% url route_name %}{% endif %}?page={{i}}">{{i}}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{% if profile_user %}{% url route_name profile_user %}{% else %}{% url route_name %}{% endif %}?page={{page_number|add:1}}">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled"><a class="page-link" href="#" tabindex="-1" aria-disabled="true"><span aria-hidden="true">&raquo;</span></a></li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% csrf_token %}
+
+{% for post in posts %}
+    <div class="container-fluid border rounded my-3 px-4 py-3">
+        <div class="container-fluid m-0 p-0">
+            <a class="text-dark" href="{% url 'profile' post.creator.username %}"><h3>{{post.creator}}</h3></a>
+        </div>
+        {% if user == post.creator %}
+            <a class="edit-anchor" data-id="{{post.id}}" id="{{post.id}}_anchor" href="#" role="button">Edit</a>
+            <form id="{{post.id}}" class="edit-form" hidden="true" action="{% url 'edit' post.id %}" method="post">
+                {% csrf_token %}
+                <textarea  id="{{post.id}}_textarea" name="content" class="form-control mb-1 mt-2" maxlength="512" required>{{post.content}}</textarea>
+                <input type="submit" class="btn btn-primary" value="Save"/>
+            </form>
+        {% endif %}
+        <p id="{{post.id}}_content" class="m-0">{{post.content}}</p>
+        <p class="m-0 text-secondary">{{post.timestamp}}</p>
+        <div>
+            
+            <div data-id="{{post.id}}" class="image-container d-inline-block">
+                {% if user.is_authenticated and not user in post.likers.all %}
+                    {% load static %} <img id="{{post.id}}_image" class="like-image" src="{% static 'network/images/white_heart.png' %}" alt="Like button">
+                {% else %}
+                    {% load static %} <img id="{{post.id}}_image" class="like-image" src="{% static 'network/images/red_heart.png' %}" alt="Like button">
+                {% endif %}
+            </div>
+            
+            <p id="{{post.id}}_like_count" class="m-0 d-inline-block">{{post.likers.count}}</p>
+        </div>
+        <a class="text-secondary" href="#">Comment</a>
+    </div>
+{% endfor %}
+
+{% if user.is_authenticated %}
+    <script>
+
+        // Manipulate itens' visibility when 'Edit' anchor tag is clicked
+        document.querySelectorAll('.edit-anchor').forEach(anchor => {
+            anchor.onclick = () => {
+
+                // Change anchor's HTML
+                let editing = false;
+                if (anchor.innerHTML == 'Edit') {
+                    anchor.innerHTML = 'Cancel';
+                    editing = true;
+                } else {
+                    anchor.innerHTML = 'Edit';
+                }
+
+                // Get form and text content associated with that anchor
+                let post_id = anchor.dataset.id;
+                let form = document.getElementById(post_id);
+                let content = document.getElementById(`${post_id}_content`);
+
+                // Change form's visibility
+                if (editing) {
+                    form.hidden = false;
+                    content.hidden = true;
+                } else {
+                    form.hidden = true;
+                    content.hidden = false;
+                }
+
+                return false;
+            };
+        });
+
+        // Update post's content when form associated with it is submitted
+        document.querySelectorAll('.edit-form').forEach(form => {
+            form.onsubmit = () => {
+
+                let csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value
+
+                fetch(`/edit/${form.id}`, {
+                    method: 'POST',
+                    body: JSON.stringify({content: document.getElementById(`${form.id}_textarea`).value}),
+                    headers: {'X-CSRFToken': csrf_token}
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.error) {
+                        console.log(result.error)
+                    } else {
+                        document.getElementById(`${form.id}_content`).innerHTML = result.content;
+                        document.getElementById(`${form.id}_anchor`).click();
+                    }
+                });
+                return false;
+            }
+        });
+
+        // Add event listeners to change like button's image and like its post
+        document.querySelectorAll('.image-container').forEach(container => {
+            container.onmouseover = () => {
+                change_background_image(container);
+            }
+            container.onmouseout = () => {
+                change_background_image(container);
+            }
+            container.onclick = () => {
+                
+                let csrf_token = document.getElementsByName('csrfmiddlewaretoken')[0].value
+
+                fetch(`/like/${container.dataset.id}`, {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrf_token}
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.error) {
+                        console.log(result.error)
+                    } else {
+                        document.getElementById(`${container.dataset.id}_like_count`).innerHTML = result.like_count;
+                        change_background_image(container);
+                    }
+                });
+                return false;
+            }
+        });
+
+        // Function to change between the two like button images
+        function change_background_image(container) {
+            let image = document.getElementById(`${container.dataset.id}_image`);
+            if (image.src.includes("{% static 'network/images/red_heart.png' %}")) {
+                image.src = "{% static 'network/images/white_heart.png' %}";
+            } else {
+                image.src = "{% static 'network/images/red_heart.png' %}";
+            }
+        }
+
+    </script>
+{% endif %}
