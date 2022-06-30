@@ -1,7 +1,8 @@
 # web-projects
 All projects are demonstrated in my Youtube channel:
 https://www.youtube.com/channel/UCHK4hi4W9ZQeINay1avraDw/videos
-
+You can also find another website I created at:
+100macete.com.br
 
 ## Project 1 - Wiki
 ### The assignment was the following:
