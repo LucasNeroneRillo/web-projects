@@ -1,7 +1,7 @@
 # web-projects
 #### All projects are demonstrated in my Youtube channel:
 https://www.youtube.com/channel/UCHK4hi4W9ZQeINay1avraDw/videos
-#### You can also find another website I created at:
+#### You can also find another web application I created at:
 http://100macete.com.br
 
 ## Project 1 - Wiki
