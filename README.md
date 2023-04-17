@@ -1,8 +1,6 @@
 # web-projects
 #### All projects are demonstrated in the following playlist of my Youtube channel:
 https://www.youtube.com/watch?v=tFhV-paHJd4&list=PLzoAP9JAQubf_udOQJDyPjr_ohktCfPA_&index=1
-#### You can also find another web application I created at:
-http://100macete.com.br
 
 ## Project 1 - Wiki
 ### The assignment was the following:
